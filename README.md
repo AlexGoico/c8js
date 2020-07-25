@@ -1,5 +1,7 @@
 # c8js
 
+![CI](https://github.com/AlexGoico/c8js/workflows/CI/badge.svg)
+
 Chip8 implementation and API
 
 ## Development
