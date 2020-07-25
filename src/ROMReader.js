@@ -1,26 +1,44 @@
+/**
+ * This is a container class for holding the interface to accessing
+ * a Chip8's ROM data. All data manipulation will be accessed through
+ * methods of this class.
+ */
 class ROM {
-  constructor(two_byte_arr) {
-    this.rom = two_byte_arr;
+  /**
+   * @param {num[]} twoByteArr A ROMs data as two bytes.
+   */
+  constructor(twoByteArr) {
+    this.data = twoByteArr;
   }
 
+  /**
+   * @returns {string} Returns the rom's two byte data separated by a space.
+   */
   toString() {
-    return this.rom.map(byte => byte.toString(16)).join(" ");
+    return this.data.map((byte) => byte.toString(16)).join(' ');
   }
 }
 
 function arrBufTo16BitNums(buf) {
   const dv = new DataView(buf);
 
-  const two_bytes = [];
+  const twoBytes = [];
   for (let i = 0; i < buf.byteLength; i += 16) {
-    two_bytes.push(dv.getUint16(i));
+    twoBytes.push(dv.getUint16(i));
   }
-  return two_bytes;
+  return twoBytes;
 }
 
+/**
+ * ROMReaders interface method to kick off reading two byte big endian numbers.
+ * @param {File} file The Chip8 ROM file
+ * @returns {Promise<ROM>}
+ */
 async function read(file) {
   const arrBuf = await file.arrayBuffer();
   return new ROM(arrBufTo16BitNums(arrBuf));
 }
 
-export default { read };
+export {
+  read,
+};
