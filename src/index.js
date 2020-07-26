@@ -1,6 +1,6 @@
 import Chip8 from './Chip8';
 import PixiRenderer from './PixiRenderer';
-import ROMReader from './ROMReader';
+import * as ROMReader from './ROMReader';
 
 function setupROMSelector() {
   // Reset rom selection each time page loads.
