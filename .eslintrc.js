@@ -15,6 +15,7 @@ module.exports = {
     'jsdoc',
   ],
   'rules': {
+    'indent': ['error', 2],
     'require-jsdoc': 0,
     'valid-jsdoc': 0,
     'jsdoc/require-param': 2,
