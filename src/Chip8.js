@@ -45,7 +45,7 @@ class Chip8 {
 
     if (firstNibble === 2) {
       // Set stack frame to
-      this.mem[this.SP] = this.PC >> 8;
+      this.mem[this.SP] = this.PC & 0xF00;
       this.mem[this.SP+1] = this.PC & 0xFF;
       this.PC = opcode & 0xFFF;
     }

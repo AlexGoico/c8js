@@ -6,13 +6,22 @@ module.exports = {
   mode: 'production',
   output: {
     path: path.resolve(__dirname, './dist'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: "Chip8 Emu",
-      template: "index.html"
-    })
+      title: 'Chip8 Emu',
+      template: 'index.html',
+    }),
   ],
-  devtool: 'eval-source-map'
+  module: {
+    rules: [
+      {
+        test: /.*.js/,
+        exclude: /node_modules/,
+        loader: 'babel-loader',
+      },
+    ],
+  },
+  devtool: 'eval-source-map',
 };
