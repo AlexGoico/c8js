@@ -18,6 +18,7 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jsdoc": "^30.0.3",
     "html-webpack-plugin": "^4.3.0",
+    "husky": "^4.2.5",
     "jest": "^26.1.0",
     "jest-extended": "^0.11.5",
     "jsdoc": "^3.6.5",
@@ -35,13 +36,20 @@
     "type": "git",
     "url": "git+https://github.com/AlexGoico/c8js.git"
   },
+  "husky":{
+      "hooks":{
+        "pre-commit": "eslint '**/*.js' --fix && npm test"
+      }
+  },
   "author": "",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/AlexGoico/c8js/issues"
   },
   "jest": {
-    "setupFilesAfterEnv": ["jest-extended"],
+    "setupFilesAfterEnv": [
+      "jest-extended"
+    ],
     "transform": {
       ".*\\.js": "babel-jest"
     }
