@@ -55,6 +55,7 @@ class Chip8 {
     else if (firstNibble === 6) {
       const num = (thirdNibble << 4) + fourthNibble;
       this.registers[secondNibble] = num;
+      this.PC += 2;
     }
   }
 }
