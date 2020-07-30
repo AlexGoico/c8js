@@ -24,4 +24,4 @@ jobs:
       - name: lint
         run: npx eslint src/
       - name: test
-        run: npx test
+        run: npm test
