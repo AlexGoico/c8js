@@ -42,12 +42,19 @@ class Chip8 {
   step() {
     const opcode = this.mem[this.PC] << 8 + this.mem[this.PC+1];
     const firstNibble = (opcode >> 12) & 0xF;
+    const secondNibble = (opcode >> 8) & 0xF;
+    const thirdNibble = (opcode >> 4) & 0xF;
+    const fourthNibble = opcode & 0xF;
 
     if (firstNibble === 2) {
       // Set stack frame to
       this.mem[this.SP] = this.PC & 0xF00;
       this.mem[this.SP+1] = this.PC & 0xFF;
       this.PC = opcode & 0xFFF;
+    }
+    else if (firstNibble === 6) {
+      const num = (thirdNibble << 4) + fourthNibble;
+      this.registers[secondNibble] = num;
     }
   }
 }

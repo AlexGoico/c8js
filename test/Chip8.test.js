@@ -6,31 +6,47 @@ const FakeRenderer = jest.fn().mockImplementation(function() {
   return {'init': noop};
 });
 
-const FakeROM = jest.fn().mockImplementation(function() {
-  const o = {};
-  o[Symbol.iterator] = function* () {
-    yield 0x2008;
+function getFakeROM(codes) {
+  if (!(codes instanceof Array)) {
+    codes = [codes];
+  }
+
+  const rom = {};
+  rom[Symbol.iterator] = function* () {
+    for (const code of codes) {
+      yield code;
+    }
   };
-  return o;
-});
+  return rom;
+}
 
 describe('Chip8 Suite', function c8Suite() {
   test('smoke test', function smokeTest() {
     expect(2).toEqual(1+1);
   });
 
-  describe.only('opcode tests', function opcodeSuite() {
-    test('callAddr2NNN', function callAddrTest() {
+  describe('opcode tests', function opcodeSuite() {
+    beforeEach(function() {
       FakeRenderer.mockClear();
+    });
+
+    test('2NNN - callAddr', function callAddrTest() {
       const c8 = new Chip8(new FakeRenderer());
-
-      c8.loadROM(new FakeROM());
-
+      c8.loadROM(getFakeROM(0x2008));
       c8.step();
+
       expect(c8.PC).toEqual(0x8);
       expect(c8.mem[c8.SP]).toEqual(0x200);
       expect(c8.mem[c8.SP+1]).toEqual(0);
       expect(c8.mem[c8.SP+2]).toBeNil();
+    });
+
+    test('6XKNN - setRegToNum', function setRegToNumTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadROM(getFakeROM(0x620A));
+      c8.step();
+
+      expect(c8.registers[0x2]).toEqual(0x0A);
     });
   });
 });
