@@ -23,3 +23,5 @@ jobs:
         run: npm install
       - name: lint
         run: npx eslint src/
+      - name: test
+        run: npx test
