@@ -33,7 +33,8 @@ class AppDriver {
             });
           }
         });
-    } else {
+    }
+    else {
       console.error('Unable to find file selector field');
     }
   }
