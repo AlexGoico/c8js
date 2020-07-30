@@ -36,5 +36,9 @@ module.exports = {
         },
       },
     ],
+    'brace-style': [
+      'error',
+      'stroustrup',
+    ],
   },
 };
