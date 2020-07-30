@@ -36,6 +36,11 @@
     "type": "git",
     "url": "git+https://github.com/AlexGoico/c8js.git"
   },
+  "husky":{
+      "hooks":{
+        "pre-commit": "eslint '**/*.js' --fix && npm test"
+      }
+  },
   "author": "",
   "license": "MIT",
   "bugs": {
