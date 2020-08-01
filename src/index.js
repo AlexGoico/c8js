@@ -46,6 +46,8 @@ class AppDriver {
     const renderer = new PixiRenderer(container, 500, 500);
 
     AppDriver.c8 = new Chip8(renderer);
+    AppDriver.c8.mem[0xF00] = 1;
+    AppDriver.c8.draw();
   }
 }
 

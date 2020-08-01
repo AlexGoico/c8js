@@ -1,3 +1,45 @@
+function checkOffsetRange_(arr, start, len) {
+  if (start > arr.length) {
+    throw new Error(`View begins (${start}) past the ` +
+      `length (${arr.length}) of the array.`);
+  }
+  else if (start + len > arr.length) {
+    throw new Error(`Array length is ${arr.length} but view range ` +
+      `extends ${start + len - arr.length} beyond that.`);
+  }
+}
+
+class ArrayView {
+  constructor(arrRef, start, len) {
+    checkOffsetRange_(arrRef, start);
+
+    this.arrRef = arrRef;
+    this.offset = start;
+    this.len = len;
+  }
+
+  get(i) {
+    if (this.start + i > this.arrRef.length) {
+      throw new Error(`Cannot index (${this.start + i}) past ` +
+        `end of array length (${this.arrRef.length} referenced.`);
+    }
+
+    return this.arrRef[this.offset + i];
+  }
+}
+
+class MatrixView2D {
+  constructor(arrView, xlen, ylen) {
+    this.arrView = arrView;
+    this.xlen = xlen;
+    this.ylen = ylen;
+  }
+
+  get(x, y) {
+    return this.arrView.get(x*y);
+  }
+}
+
 class Chip8 {
   /**
    * @param {Renderer} renderer Renderer used while running.
@@ -34,6 +76,14 @@ class Chip8 {
     for (const byte of rom) {
       this.mem[this.PC + i++] = byte;
     }
+  }
+
+  /**
+   * Renders the Chip8's display buffer.
+   */
+  draw() {
+    const view = new ArrayView(this.mem, 0xF00, 256);
+    this.renderer.draw(new MatrixView2D(view, 8, 32));
   }
 
   /**
