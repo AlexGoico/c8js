@@ -43,10 +43,11 @@ class AppDriver {
     AppDriver.setupROMSelector();
 
     const container = document.getElementById('emulator');
-    const renderer = new PixiRenderer(container, 500, 500);
+    const renderer = new PixiRenderer(container, 640, 320);
 
     AppDriver.c8 = new Chip8(renderer);
-    AppDriver.c8.mem[0xF00] = 1;
+    AppDriver.c8.mem[0xF00] = 0xAA;
+    AppDriver.c8.mem[0xFCA] = 0xAA;
     AppDriver.c8.draw();
   }
 }

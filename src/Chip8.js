@@ -36,7 +36,7 @@ class MatrixView2D {
   }
 
   get(x, y) {
-    return this.arrView.get(x*y);
+    return this.arrView.get(x*this.ylen + y);
   }
 }
 

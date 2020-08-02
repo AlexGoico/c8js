@@ -38,8 +38,8 @@ class PixiRenderer {
     const whiteRect = new PIXI.Graphics();
 
     // this assumption should be designed better than a magic number
-    const pixWidth = this.app.width / (buffer.xlen * 8);
-    const pixHeight = this.app.height / buffer.ylen;
+    const pixWidth = this.app.screen.width / (buffer.xlen * 8);
+    const pixHeight = this.app.screen.height / buffer.ylen;
 
     blkRect.beginFill(0x000000);
     whiteRect.beginFill(0xFFFFFF);
@@ -49,7 +49,7 @@ class PixiRenderer {
         for (let i = 0; i < 8; i++) {
           const leftPixel = (eightPixels << i) & 0b10000000;
           const rect = leftPixel ? whiteRect : blkRect;
-          rect.drawRect(x * pixWidth, y * pixHeight, pixWidth, pixHeight);
+          rect.drawRect((x*8+i) * pixWidth, y * pixHeight, pixWidth, pixHeight);
         }
       }
     }
