@@ -1,3 +1,10 @@
+class InvalidInstruction extends Error {
+  constructor(message) {
+    super(message);
+    this.name = `InvalidInstruction`;
+  }
+}
+
 function checkOffsetRange_(arr, start, len) {
   if (start > arr.length) {
     throw new Error(`View begins (${start}) past the ` +
@@ -46,7 +53,10 @@ class Chip8 {
    * @see PixiRenderer
    */
   constructor(renderer) {
+    this.loopHandle = null;
+    this.simHandle = null;
     this.renderer = renderer;
+
     this.reset();
   }
 
@@ -55,6 +65,8 @@ class Chip8 {
    * and clearing the memory and registers.
    */
   reset() {
+    cancelAnimationFrame(this.loopHandle);
+    clearInterval(this.simHandle);
     // 0xF00-0xFFF - Reserved for display
     // 0xEA0-0xEFF - Reserved or stack. Used for return addresses of subroutines
     this.mem = new Array(4096);
@@ -87,10 +99,49 @@ class Chip8 {
   }
 
   /**
+   * @private
+   */
+  simLoop_() {
+    try {
+      this.step();
+    }
+    catch (err) {
+      this.stop();
+      console.error(err.message);
+    }
+  }
+
+  /**
+   * @async Starts the render and simulation loop
+   */
+  async start() {
+    const render = () => {
+      this.draw();
+      this.loopHandle = requestAnimationFrame(render);
+    };
+    this.loopHandle = requestAnimationFrame(render);
+    this.simHandle = setInterval(this.simLoop_.bind(this), 1000 / 30);
+  }
+
+  /**
+   * @async Stops the render and simulation loop
+   */
+  async stop() {
+    cancelAnimationFrame(this.loopHandle);
+    clearInterval(this.simHandle);
+  }
+
+  /**
    * Move one step into running the Chip8, that is, execute a single opcode.
+   * @throws InvalidInstruction Throw when an unimplemented opcode is
+   *         encountered.
    */
   step() {
-    const opcode = this.mem[this.PC] << 8 + this.mem[this.PC+1];
+    const opcode = (this.mem[this.PC] << 8) + this.mem[this.PC+1];
+    console.log(this.PC);
+    console.log(this.mem[this.PC].toString(16));
+    console.log(`Executing ${opcode.toString(16)}.`);
+
     const firstNibble = (opcode >> 12) & 0xF;
     const secondNibble = (opcode >> 8) & 0xF;
     const thirdNibble = (opcode >> 4) & 0xF;
@@ -106,6 +157,10 @@ class Chip8 {
       const num = (thirdNibble << 4) + fourthNibble;
       this.registers[secondNibble] = num;
       this.PC += 2;
+    }
+    else {
+      const code = opcode.toString(16);
+      throw new InvalidInstruction(`Opcode ${code} not implemented.`);
     }
   }
 }
