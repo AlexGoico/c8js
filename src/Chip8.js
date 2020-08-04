@@ -53,8 +53,8 @@ class Chip8 {
    * @see PixiRenderer
    */
   constructor(renderer) {
-    this.loopHandle = null;
-    this.simHandle = null;
+    this.renderLoopHandle = null;
+    this.simLogicHandle = null;
     this.renderer = renderer;
 
     this.reset();
@@ -65,8 +65,8 @@ class Chip8 {
    * and clearing the memory and registers.
    */
   reset() {
-    cancelAnimationFrame(this.loopHandle);
-    clearInterval(this.simHandle);
+    cancelAnimationFrame(this.renderLoopHandle);
+    clearInterval(this.simLogicHandle);
     // 0xF00-0xFFF - Reserved for display
     // 0xEA0-0xEFF - Reserved or stack. Used for return addresses of subroutines
     this.mem = new Array(4096);
@@ -117,18 +117,22 @@ class Chip8 {
   async start() {
     const render = () => {
       this.draw();
-      this.loopHandle = requestAnimationFrame(render);
+      this.renderLoopHandle = requestAnimationFrame(render);
     };
-    this.loopHandle = requestAnimationFrame(render);
-    this.simHandle = setInterval(this.simLoop_.bind(this), 1000 / 30);
+    this.renderLoopHandle = requestAnimationFrame(render);
+    this.simLogicHandle = setInterval(this.simLoop_.bind(this), 1000 / 30);
   }
 
   /**
    * @async Stops the render and simulation loop
    */
   async stop() {
-    cancelAnimationFrame(this.loopHandle);
-    clearInterval(this.simHandle);
+    cancelAnimationFrame(this.renderLoopHandle);
+    clearInterval(this.simLogicHandle);
+
+    // clear handles
+    this.renderLoopHandle = null;
+    this.simLogicHandle = null;
   }
 
   /**
@@ -138,8 +142,6 @@ class Chip8 {
    */
   step() {
     const opcode = (this.mem[this.PC] << 8) + this.mem[this.PC+1];
-    console.log(this.PC);
-    console.log(this.mem[this.PC].toString(16));
     console.log(`Executing ${opcode.toString(16)}.`);
 
     const firstNibble = (opcode >> 12) & 0xF;
