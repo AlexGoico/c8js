@@ -18,6 +18,12 @@ module.exports = {
     'indent': ['error', 2],
     'require-jsdoc': 0,
     'valid-jsdoc': 0,
+    'newline-per-chained-call': [
+      'error',
+      {
+        'ignoreChainWithDepth': 3,
+      },
+    ],
     'jsdoc/require-param': 2,
     'jsdoc/require-param-type': 2,
     'jsdoc/require-returns': 2,

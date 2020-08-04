@@ -1,10 +1,65 @@
+const FPS = 30;
+const MS_PER_FRAME = 1000 / FPS;
+
+class InvalidInstruction extends Error {
+  constructor(message) {
+    super(message);
+    this.name = `InvalidInstruction`;
+  }
+}
+
+function checkOffsetRange_(arr, start, len) {
+  if (start > arr.length) {
+    throw new Error(`View begins (${start}) past the ` +
+      `length (${arr.length}) of the array.`);
+  }
+  else if (start + len > arr.length) {
+    throw new Error(`Array length is ${arr.length} but view range ` +
+      `extends ${start + len - arr.length} beyond that.`);
+  }
+}
+
+class ArrayView {
+  constructor(arrRef, start, len) {
+    checkOffsetRange_(arrRef, start);
+
+    this.arrRef = arrRef;
+    this.offset = start;
+    this.len = len;
+  }
+
+  get(i) {
+    if (this.offset + i >= this.arrRef.length) {
+      throw new Error(`Cannot index (${this.start + i}) past ` +
+        `end of array length (${this.arrRef.length} referenced.`);
+    }
+
+    return this.arrRef[this.offset + i];
+  }
+}
+
+class MatrixView2D {
+  constructor(arrView, xlen, ylen) {
+    this.arrView = arrView;
+    this.xlen = xlen;
+    this.ylen = ylen;
+  }
+
+  get(x, y) {
+    return this.arrView.get(x*this.ylen + y);
+  }
+}
+
 class Chip8 {
   /**
    * @param {Renderer} renderer Renderer used while running.
    * @see PixiRenderer
    */
   constructor(renderer) {
+    this.renderLoopHandle = null;
+    this.simLogicHandle = null;
     this.renderer = renderer;
+
     this.reset();
   }
 
@@ -13,6 +68,8 @@ class Chip8 {
    * and clearing the memory and registers.
    */
   reset() {
+    cancelAnimationFrame(this.renderLoopHandle);
+    clearInterval(this.simLogicHandle);
     // 0xF00-0xFFF - Reserved for display
     // 0xEA0-0xEFF - Reserved or stack. Used for return addresses of subroutines
     this.mem = new Array(4096);
@@ -37,10 +94,59 @@ class Chip8 {
   }
 
   /**
+   * Renders the Chip8's display buffer.
+   */
+  draw() {
+    const view = new ArrayView(this.mem, 0xF00, 256);
+    this.renderer.draw(new MatrixView2D(view, 8, 32));
+  }
+
+  /**
+   * @private
+   */
+  simLoop_() {
+    try {
+      this.step();
+    }
+    catch (err) {
+      this.stop();
+      console.error(err.message);
+    }
+  }
+
+  /**
+   * @async Starts the render and simulation loop
+   */
+  async start() {
+    const render = () => {
+      this.draw();
+      this.renderLoopHandle = requestAnimationFrame(render);
+    };
+    this.renderLoopHandle = requestAnimationFrame(render);
+    this.simLogicHandle = setInterval(this.simLoop_.bind(this), MS_PER_FRAME);
+  }
+
+  /**
+   * @async Stops the render and simulation loop
+   */
+  async stop() {
+    cancelAnimationFrame(this.renderLoopHandle);
+    clearInterval(this.simLogicHandle);
+
+    // clear handles
+    this.renderLoopHandle = null;
+    this.simLogicHandle = null;
+  }
+
+  /**
    * Move one step into running the Chip8, that is, execute a single opcode.
+   * @throws InvalidInstruction Throw when an unimplemented opcode is
+   *         encountered.
    */
   step() {
-    const opcode = this.mem[this.PC] << 8 + this.mem[this.PC+1];
+    const opcode = (this.mem[this.PC] << 8) + this.mem[this.PC+1];
+    console.log(`Executing ${opcode.toString(16)}.`);
+
     const firstNibble = (opcode >> 12) & 0xF;
     const secondNibble = (opcode >> 8) & 0xF;
     const thirdNibble = (opcode >> 4) & 0xF;
@@ -56,6 +162,10 @@ class Chip8 {
       const num = (thirdNibble << 4) + fourthNibble;
       this.registers[secondNibble] = num;
       this.PC += 2;
+    }
+    else {
+      const code = opcode.toString(16);
+      throw new InvalidInstruction(`Opcode ${code} not implemented.`);
     }
   }
 }

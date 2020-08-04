@@ -12,6 +12,8 @@ class PixiRenderer {
       'width': width,
       'height': height,
     });
+    this.pixels = new PIXI.Container();
+    this.app.stage.addChild(this.pixels);
 
     this.container = containerElement;
   }
@@ -23,6 +25,39 @@ class PixiRenderer {
    */
   init() {
     this.container.appendChild(this.app.view);
+  }
+
+  /**
+   * Renders a view of bytes x rows where each byte represents 8 pixels.
+   * @param {MatrixView2D} buffer A 2d array view of bytes x rows.
+   */
+  draw(buffer) {
+    this.pixels.removeChildren();
+
+    const blkRect = new PIXI.Graphics();
+    const whiteRect = new PIXI.Graphics();
+
+    // this assumption should be designed better than a magic number
+    const pixWidth = this.app.screen.width / (buffer.xlen * 8);
+    const pixHeight = this.app.screen.height / buffer.ylen;
+
+    blkRect.beginFill(0x000000);
+    whiteRect.beginFill(0xFFFFFF);
+    for (let x = 0; x < buffer.xlen; x++) {
+      for (let y = 0; y < buffer.ylen; y++) {
+        const eightPixels = buffer.get(x, y);
+        for (let i = 0; i < 8; i++) {
+          const leftPixel = (eightPixels << i) & 0b10000000;
+          const rect = leftPixel ? whiteRect : blkRect;
+          rect.drawRect((x*8+i) * pixWidth, y * pixHeight, pixWidth, pixHeight);
+        }
+      }
+    }
+    whiteRect.endFill();
+    blkRect.endFill();
+
+    this.pixels.addChild(whiteRect);
+    this.pixels.addChild(blkRect);
   }
 }
 
