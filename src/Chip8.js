@@ -1,3 +1,6 @@
+const FPS = 30;
+const MS_PER_FRAME = 1000 / FPS;
+
 class InvalidInstruction extends Error {
   constructor(message) {
     super(message);
@@ -120,7 +123,7 @@ class Chip8 {
       this.renderLoopHandle = requestAnimationFrame(render);
     };
     this.renderLoopHandle = requestAnimationFrame(render);
-    this.simLogicHandle = setInterval(this.simLoop_.bind(this), 1000 / 30);
+    this.simLogicHandle = setInterval(this.simLoop_.bind(this), MS_PER_FRAME);
   }
 
   /**
