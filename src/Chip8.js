@@ -26,7 +26,7 @@ class ArrayView {
   }
 
   get(i) {
-    if (this.start + i > this.arrRef.length) {
+    if (this.offset + i >= this.arrRef.length) {
       throw new Error(`Cannot index (${this.start + i}) past ` +
         `end of array length (${this.arrRef.length} referenced.`);
     }
