@@ -163,6 +163,11 @@ class Chip8 {
       this.registers[secondNibble] = num;
       this.PC += 2;
     }
+    else if (firstNibble === 0xA) {
+      const addr = (secondNibble << 8) + (thirdNibble << 4) + fourthNibble;
+      this.I = addr;
+      this.PC += 2;
+    }
     else {
       const code = opcode.toString(16);
       throw new InvalidInstruction(`Opcode ${code} not implemented.`);

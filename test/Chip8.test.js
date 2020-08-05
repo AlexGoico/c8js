@@ -74,6 +74,14 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.registers[0x2]).toEqual(0x0A);
     });
 
+    test('ANNN - setIToAddr', function setIToAddrTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadROM(getFakeROM([0xA2, 0x56]));
+      c8.step();
+
+      expect(c8.I).toEqual(0x256);
+    });
+
     test('Throws InvalidException on invalid opcodes',
       function invalidOpcodeTest() {
         let c8 = new Chip8(new FakeRenderer());
