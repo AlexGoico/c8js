@@ -96,9 +96,39 @@ class Chip8 {
   /**
    * Renders the Chip8's display buffer.
    */
-  draw() {
+  render() {
     const view = new ArrayView(this.mem, 0xF00, 256);
     this.renderer.draw(new MatrixView2D(view, 8, 32));
+  }
+
+  /**
+   * Draws sprite to display memory by xoring sprite bytes to display
+   * bytes in memory. If any bits are flipped VF register is set to 1
+   * otherwise 0.
+   * @param {int} x The x coordinate from the beginning of memory where drawing
+   *                will begin
+   * @param {int} y The x coordinate from the beginning of memory where drawing
+   *                will begin
+   * @param {int} h How much of the height of the sprite will be utilized for
+   *                this drawing
+   */
+  draw(x, y, h) {
+    const view = new ArrayView(this.mem, 0xF00, 0xF00 + 8*h);
+    const buffer = new MatrixView2D(view, 8, h);
+
+    let collided = false;
+    for (let i = x; i < buffer.xlen; i++) {
+      for (let j = y; j < buffer.ylen; j++) {
+        const eightPixels = buffer.get(i, j);
+        const spriteByte = this.mem[this.I + i*buffer.ylen + j];
+        this.mem[this.I + i*buffer.ylen + j] = eightPixels ^ spriteByte;
+
+        collided =
+          collided ||
+          (eightPixels & this.mem[this.I + i*buffer.ylen + j]) !== 0;
+      }
+    }
+    this.registers[0xF] = collided ? 1 : 0;
   }
 
   /**
@@ -119,7 +149,7 @@ class Chip8 {
    */
   async start() {
     const render = () => {
-      this.draw();
+      this.render();
       this.renderLoopHandle = requestAnimationFrame(render);
     };
     this.renderLoopHandle = requestAnimationFrame(render);
@@ -166,6 +196,15 @@ class Chip8 {
     else if (firstNibble === 0xA) {
       const addr = (secondNibble << 8) + (thirdNibble << 4) + fourthNibble;
       this.I = addr;
+      this.PC += 2;
+    }
+    else if (firstNibble === 0xD) {
+      const x = this.registers[secondNibble];
+      const y = this.registers[thirdNibble];
+      const h = fourthNibble;
+
+      this.draw(x, y, h);
+
       this.PC += 2;
     }
     else {
