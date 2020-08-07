@@ -72,8 +72,8 @@ class Chip8 {
     clearInterval(this.simLogicHandle);
     // 0xF00-0xFFF - Reserved for display
     // 0xEA0-0xEFF - Reserved or stack. Used for return addresses of subroutines
-    this.mem = new Array(4096);
-    this.registers = new Array(16);
+    this.mem = new Array(4096).fill(0);
+    this.registers = new Array(16).fill(0);
     this.PC = 0x200; // Assume no ROMS intended for a ETI 660 computer
     this.SP = 0xEA0;
 
@@ -183,35 +183,39 @@ class Chip8 {
     const fourthNibble = opcode & 0xF;
 
     switch (firstNibble) {
-      case 2:
+      case 2: {
         // Set stack frame to
         this.mem[this.SP] = this.PC & 0xF00;
         this.mem[this.SP + 1] = this.PC & 0xFF;
         this.PC = opcode & 0xFFF;
-        break;
-      case 6:
+        return;
+      }
+      case 6: {
         const num = (thirdNibble << 4) + fourthNibble;
         this.registers[secondNibble] = num;
-        this.PC += 2;
-        break;
-      case 0xA:
+      } break;
+      case 7: {
+        const num = (thirdNibble << 4) + fourthNibble;
+        this.registers[secondNibble] += num;
+        this.registers[secondNibble] &= 0xFF;
+      } break;
+      case 0xA: {
         const addr = (secondNibble << 8) + (thirdNibble << 4) + fourthNibble;
         this.I = addr;
-        this.PC += 2;
-        break;
-      case 0xD:
+      } break;
+      case 0xD: {
         const x = this.registers[secondNibble];
         const y = this.registers[thirdNibble];
         const h = fourthNibble;
 
         this.draw(x, y, h);
-
-        this.PC += 2;
-        break;
+      } break;
       default:
         const code = opcode.toString(16);
         throw new InvalidInstruction(`Opcode ${code} not implemented.`);
     }
+
+    this.PC += 2;
   }
 }
 

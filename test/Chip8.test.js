@@ -63,7 +63,7 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.PC).toEqual(0x008);
       expect(c8.mem[c8.SP]).toEqual(0x200);
       expect(c8.mem[c8.SP+1]).toEqual(0);
-      expect(c8.mem[c8.SP+2]).toBeNil();
+      expect(c8.mem[c8.SP+2]).toEqual(0);
     });
 
     test('6XKNN - setRegToNum', function setRegToNumTest() {
@@ -72,6 +72,19 @@ describe('Chip8 Suite', function c8Suite() {
       c8.step();
 
       expect(c8.registers[0x2]).toEqual(0x0A);
+    });
+
+    test('7XNN - addByteToReg', function addByteToRegTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.registers[0x1] = 1;
+      c8.loadROM(getFakeROM([0x70, 0x0A, 0x71, 0xFF]));
+      c8.step();
+
+      expect(c8.registers[0x0]).toEqual(0x0A);
+
+      c8.step();
+      expect(c8.registers[0x1]).toEqual(0);
+      expect(c8.registers[0xF]).toEqual(0);
     });
 
     test('ANNN - setIToAddr', function setIToAddrTest() {
