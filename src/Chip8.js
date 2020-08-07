@@ -174,7 +174,7 @@ class Chip8 {
    *         encountered.
    */
   step() {
-    const opcode = (this.mem[this.PC] << 8) + this.mem[this.PC+1];
+    const opcode = (this.mem[this.PC] << 8) + this.mem[this.PC + 1];
     console.log(`Executing ${opcode.toString(16)}.`);
 
     const firstNibble = (opcode >> 12) & 0xF;
@@ -182,34 +182,35 @@ class Chip8 {
     const thirdNibble = (opcode >> 4) & 0xF;
     const fourthNibble = opcode & 0xF;
 
-    if (firstNibble === 2) {
-      // Set stack frame to
-      this.mem[this.SP] = this.PC & 0xF00;
-      this.mem[this.SP+1] = this.PC & 0xFF;
-      this.PC = opcode & 0xFFF;
-    }
-    else if (firstNibble === 6) {
-      const num = (thirdNibble << 4) + fourthNibble;
-      this.registers[secondNibble] = num;
-      this.PC += 2;
-    }
-    else if (firstNibble === 0xA) {
-      const addr = (secondNibble << 8) + (thirdNibble << 4) + fourthNibble;
-      this.I = addr;
-      this.PC += 2;
-    }
-    else if (firstNibble === 0xD) {
-      const x = this.registers[secondNibble];
-      const y = this.registers[thirdNibble];
-      const h = fourthNibble;
+    switch (firstNibble) {
+      case 2:
+        // Set stack frame to
+        this.mem[this.SP] = this.PC & 0xF00;
+        this.mem[this.SP + 1] = this.PC & 0xFF;
+        this.PC = opcode & 0xFFF;
+        break;
+      case 6:
+        const num = (thirdNibble << 4) + fourthNibble;
+        this.registers[secondNibble] = num;
+        this.PC += 2;
+        break;
+      case 0xA:
+        const addr = (secondNibble << 8) + (thirdNibble << 4) + fourthNibble;
+        this.I = addr;
+        this.PC += 2;
+        break;
+      case 0xD:
+        const x = this.registers[secondNibble];
+        const y = this.registers[thirdNibble];
+        const h = fourthNibble;
 
-      this.draw(x, y, h);
+        this.draw(x, y, h);
 
-      this.PC += 2;
-    }
-    else {
-      const code = opcode.toString(16);
-      throw new InvalidInstruction(`Opcode ${code} not implemented.`);
+        this.PC += 2;
+        break;
+      default:
+        const code = opcode.toString(16);
+        throw new InvalidInstruction(`Opcode ${code} not implemented.`);
     }
   }
 }

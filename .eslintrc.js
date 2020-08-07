@@ -15,7 +15,13 @@ module.exports = {
     'jsdoc',
   ],
   'rules': {
-    'indent': ['error', 2],
+    'indent': [
+      'error',
+      2,
+      {
+        'SwitchCase': 1,
+      },
+    ],
     'require-jsdoc': 0,
     'valid-jsdoc': 0,
     'newline-per-chained-call': [
