@@ -190,6 +190,12 @@ class Chip8 {
         this.PC = opcode & 0xFFF;
         return;
       }
+      case 3: {
+        const num = (thirdNibble << 4) + fourthNibble;
+        if (this.registers[secondNibble] === num) {
+          this.PC += 2;
+        }
+      } break;
       case 6: {
         const num = (thirdNibble << 4) + fourthNibble;
         this.registers[secondNibble] = num;

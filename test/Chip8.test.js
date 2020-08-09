@@ -66,6 +66,17 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.mem[c8.SP+2]).toEqual(0);
     });
 
+    test('3XNN - ifRegXEqNum', function ifRegXEqNum() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadROM(getFakeROM([0x30, 0x00, 0x00, 0x00, 0x30, 0x01]));
+      c8.step();
+
+      expect(c8.PC).toEqual(0x204);
+
+      c8.step();
+      expect(c8.PC).toEqual(0x206);
+    });
+
     test('6XKNN - setRegToNum', function setRegToNumTest() {
       const c8 = new Chip8(new FakeRenderer());
       c8.loadROM(getFakeROM([0x62, 0x0A]));
