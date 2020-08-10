@@ -183,6 +183,11 @@ class Chip8 {
     const fourthNibble = opcode & 0xF;
 
     switch (firstNibble) {
+      case 1: {
+        const addr = (secondNibble << 8) + (thirdNibble << 4) + fourthNibble;
+        this.PC = addr;
+        return;
+      }
       case 2: {
         // Set stack frame to
         this.mem[this.SP] = this.PC & 0xF00;

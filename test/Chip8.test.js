@@ -55,6 +55,14 @@ describe('Chip8 Suite', function c8Suite() {
   });
 
   describe('opcode tests', function opcodeSuite() {
+    test('1NNN - jmpAddr', function jmpAddrTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadROM(getFakeROM([0x12, 0x08]));
+      c8.step();
+
+      expect(c8.PC).toEqual(0x208);
+    });
+
     test('2NNN - callAddr', function callAddrTest() {
       const c8 = new Chip8(new FakeRenderer());
       c8.loadROM(getFakeROM([0x20, 0x08]));
