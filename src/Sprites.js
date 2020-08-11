@@ -1,0 +1,148 @@
+class Sprite {
+  constructor(eightBytes) {
+    this.bytes = eightBytes;
+  }
+
+  * [Symbol.iterator]() {
+    for (const twoByte of this.bytes) {
+      const msb = twoByte >> 8;
+      const lsb = twoByte & 0xFF;
+
+      yield msb;
+      yield lsb;
+    }
+  }
+}
+
+const sprites = [
+  // Zero
+  new Sprite([
+    0xF0,
+    0x90,
+    0x90,
+    0x90,
+    0xF0,
+  ]),
+  // One
+  new Sprite([
+    0x20,
+    0x60,
+    0x20,
+    0x20,
+    0x70,
+  ]),
+  // Two
+  new Sprite([
+    0xF0,
+    0x10,
+    0xF0,
+    0x80,
+    0xF0,
+  ]),
+  // Three
+  new Sprite([
+    0xF0,
+    0x10,
+    0xF0,
+    0x10,
+    0xF0,
+  ]),
+  // Four
+  new Sprite([
+    0x90,
+    0x90,
+    0xF0,
+    0x10,
+    0x10,
+  ]),
+  // Five
+  new Sprite([
+    0xF0,
+    0x80,
+    0xF0,
+    0x10,
+    0xF0,
+  ]),
+  // Six
+  new Sprite([
+    0xF0,
+    0x80,
+    0xF0,
+    0x90,
+    0xF0,
+  ]),
+  // Seven
+  new Sprite([
+    0xF0,
+    0x10,
+    0x20,
+    0x40,
+    0x40,
+  ]),
+  // Eight
+  new Sprite([
+    0xF0,
+    0x90,
+    0xF0,
+    0x90,
+    0xF0,
+  ]),
+  // Nine
+  new Sprite([
+    0xF0,
+    0x90,
+    0xF0,
+    0x10,
+    0xF0,
+  ]),
+  // 0xA
+  new Sprite([
+    0xF0,
+    0x90,
+    0xF0,
+    0x90,
+    0x90,
+  ]),
+  // 0xB
+  new Sprite([
+    0xE0,
+    0x90,
+    0xE0,
+    0x90,
+    0xE0,
+  ]),
+  // 0xC
+  new Sprite([
+    0xF0,
+    0x80,
+    0x80,
+    0x80,
+    0xF0,
+  ]),
+  // 0xD
+  new Sprite([
+    0xE0,
+    0x90,
+    0x90,
+    0x90,
+    0xE0,
+  ]),
+  // 0xE
+  new Sprite([
+    0xF0,
+    0xE0,
+    0xF0,
+    0xE0,
+    0xF0,
+  ]),
+  // 0xF
+  new Sprite([
+    0xF0,
+    0x80,
+    0xF0,
+    0x80,
+    0x80,
+  ]),
+];
+
+export default sprites;

@@ -1,3 +1,5 @@
+import sprites from './Sprites';
+
 const FPS = 30;
 const MS_PER_FRAME = 1000 / FPS;
 
@@ -59,6 +61,7 @@ class Chip8 {
     this.renderLoopHandle = null;
     this.simLogicHandle = null;
     this.renderer = renderer;
+    this.loadSprites();
 
     this.reset();
   }
@@ -94,6 +97,20 @@ class Chip8 {
   }
 
   /**
+   * Loads sprites into memory from 0x0000 to 0x0200
+   */
+  loadSprites() {
+    let iter = 0x0000;
+
+    for (const sprite of sprites.values()) {
+      for (let i = 0; i < sprite.length; i++) {
+        this.mem[iter++] = sprite[i] >> 8;
+        this.mem[iter++] = sprite[i] & 0xFF;
+      }
+    }
+  }
+
+  /**
    * Renders the Chip8's display buffer.
    */
   render() {
@@ -113,7 +130,7 @@ class Chip8 {
    *                this drawing
    */
   draw(x, y, h) {
-    const view = new ArrayView(this.mem, 0xF00, 0xF00 + 8*h);
+    const view = new ArrayView(this.mem, 0xF000, 0xF000 + 8*h);
     const buffer = new MatrixView2D(view, 8, h);
 
     let collided = false;
@@ -141,6 +158,7 @@ class Chip8 {
     catch (err) {
       this.stop();
       console.error(err.message);
+      console.trace();
     }
   }
 

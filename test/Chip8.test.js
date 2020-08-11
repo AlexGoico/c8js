@@ -1,11 +1,13 @@
 import Chip8 from '../src/Chip8.js';
 
 const noop = () => {};
+console.log = noop;
 
 const FakeRenderer = jest.fn().mockImplementation(function() {
   return {
     'init': noop,
     'draw': noop,
+    'render': noop,
   };
 });
 
@@ -42,6 +44,7 @@ describe('Chip8 Suite', function c8Suite() {
 
   test(`can stop sim loop`, function stop() {
     const c8 = new Chip8(new FakeRenderer());
+    c8.step = noop;
     return c8.start()
       .then(function() {
         expect(c8.renderLoopHandle).not.toBeNil();
