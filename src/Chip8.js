@@ -1,3 +1,5 @@
+import {sprite} from './constants/Sprites.js';
+
 const FPS = 30;
 const MS_PER_FRAME = 1000 / FPS;
 
@@ -81,7 +83,7 @@ class Chip8 {
   }
 
   /**
-   * Loads the ROM into the chip8's memory.
+   * Loads the ROM into the chip8's memory space in 0x000 0x1FF.
    * @param {ROM} rom ROM object that has an iterator across it's bytes
    */
   loadROM(rom) {
@@ -92,6 +94,21 @@ class Chip8 {
       this.mem[this.PC + i++] = byte;
     }
   }
+
+  /**
+  * Loads the sprites into the chip8's memory.
+  * @param {sprite} sprite hashmap object containing standard hashmap functionality.
+  */
+  loadSprites() {
+    const iter = 0x000;
+    const orderedSprites = [1, 2, 3, 4, 5, 6, 7, 8, 9,
+      'A', 'B', 'C', 'D', 'E', 'F'];
+
+    for (let i = 0; i < sprite.size; i++) {
+      this.mem[iter++] = sprite.get(orderedSprites[i]) >> 8;
+      this.mem[iter++] = sprite.get(orderedSprites[i]) & 0xFF;
+    };
+  };
 
   /**
    * Renders the Chip8's display buffer.
