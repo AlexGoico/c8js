@@ -54,6 +54,14 @@ describe('Chip8 Suite', function c8Suite() {
       }, 2000));
   });
 
+  describe('memory tests', function memLoadSuite() {
+    test('memory set returns correct value', function setMemoryValue() {
+      const c8 = new Chip8(new FakeRenderer());
+
+      expect(c8.loadIntoMemory(0, 0, 1)).toEqual(1);
+    });
+  });
+
   describe('opcode tests', function opcodeSuite() {
     test('2NNN - callAddr', function callAddrTest() {
       const c8 = new Chip8(new FakeRenderer());

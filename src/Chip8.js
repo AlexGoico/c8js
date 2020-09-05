@@ -2,6 +2,8 @@ import {sprite} from './constants/Sprites.js';
 
 const FPS = 30;
 const MS_PER_FRAME = 1000 / FPS;
+const ORDERED_SPRITES_ARRAY = [1, 2, 3, 4, 5, 6, 7, 8, 9,
+  'A', 'B', 'C', 'D', 'E', 'F'];
 
 class InvalidInstruction extends Error {
   constructor(message) {
@@ -83,6 +85,19 @@ class Chip8 {
   }
 
   /**
+   * Sets memory address to value
+   * @param {Hex} startAddress initial memory address to start populating values
+   * @param {Int} iteration counter holder
+   * @param {Int} setValue assigned value of memory address
+   * @returns {Int} this.mem resulting value assigned to memory address
+   */
+  loadIntoMemory(startAddress, iteration, setValue) {
+    const memAddress = startAddress + iteration;
+    this.mem[memAddress]= setValue;
+    return this.mem[memAddress];
+  }
+
+  /**
    * Loads the ROM into the chip8's memory space in 0x000 0x1FF.
    * @param {ROM} rom ROM object that has an iterator across it's bytes
    */
@@ -97,16 +112,16 @@ class Chip8 {
 
   /**
   * Loads the sprites into the chip8's memory.
-  * @param {sprite} sprite hashmap object containing standard hashmap functionality.
+  * @param {array} orderedSprites containing the order of sprites to be loaded into memory to avoid having to sort the hashmap containing sprite hexcodes.1
+  * @param {hashmap} spriteHashmap sprite hashmap object containing standard hashmap functionality.
   */
-  loadSprites() {
-    const iter = 0x000;
-    const orderedSprites = [1, 2, 3, 4, 5, 6, 7, 8, 9,
-      'A', 'B', 'C', 'D', 'E', 'F'];
-
-    for (let i = 0; i < sprite.size; i++) {
-      this.mem[iter++] = sprite.get(orderedSprites[i]) >> 8;
-      this.mem[iter++] = sprite.get(orderedSprites[i]) & 0xFF;
+  loadSprites(orderedSprites, spriteHashmap) {
+    let iter = 0x000;
+    for (let i = 0; i < spriteHashmap.size; i++) {
+      const spriteHexValue = spriteHashmap.get(orderedSprites[i]);
+      loadIntoMemory(iter, i, spriteHexValue);
+      this.mem[iter++] = spriteHashmap.get(orderedSprites[i]) >> 8;
+      this.mem[iter++] = spriteHashmap.get(orderedSprites[i]) & 0xFF;
     };
   };
 
