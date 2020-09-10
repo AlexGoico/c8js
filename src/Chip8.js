@@ -1,5 +1,7 @@
 const FPS = 30;
 const MS_PER_FRAME = 1000 / FPS;
+const ORDERED_SPRITES_ARRAY = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+  'A', 'B', 'C', 'D', 'E', 'F'];
 
 class InvalidInstruction extends Error {
   constructor(message) {
@@ -46,7 +48,7 @@ class MatrixView2D {
   }
 
   get(x, y) {
-    return this.arrView.get(x*this.ylen + y);
+    return this.arrView.get(x * this.ylen + y);
   }
 }
 
@@ -81,7 +83,7 @@ class Chip8 {
   }
 
   /**
-   * Loads the ROM into the chip8's memory.
+   * Loads the ROM into the chip8's memory space in 0x000 0x1FF.
    * @param {ROM} rom ROM object that has an iterator across it's bytes
    */
   loadROM(rom) {
@@ -92,6 +94,25 @@ class Chip8 {
       this.mem[this.PC + i++] = byte;
     }
   }
+
+  /**
+  * Loads the sprites into the chip8's memory.
+  * @param {array} orderedSprites containing the order of sprites to be loaded
+  * into memory to avoid having to sort the hashmap containing sprite hex.
+  * @param {hashmap} spriteHashmap sprite hashmap object containing standard
+  * hashmap functionality.
+  */
+  loadSprites(spriteHashmap) {
+    let iter = 0x000;
+    for (let i = 0; i < spriteHashmap.size; i++) {
+      const spriteArray = spriteHashmap.get(
+        ORDERED_SPRITES_ARRAY[i]);
+      for (let n = 0; n < spriteArray.length; n++) {
+        this.mem[iter++] = (spriteArray[n]) & 0xFF;
+        console.log((spriteArray[n]) & 0xFF);
+      }
+    };
+  };
 
   /**
    * Renders the Chip8's display buffer.
@@ -113,19 +134,19 @@ class Chip8 {
    *                this drawing
    */
   draw(x, y, h) {
-    const view = new ArrayView(this.mem, 0xF00, 0xF00 + 8*h);
+    const view = new ArrayView(this.mem, 0xF00, 0xF00 + 8 * h);
     const buffer = new MatrixView2D(view, 8, h);
 
     let collided = false;
     for (let i = x; i < buffer.xlen; i++) {
       for (let j = y; j < buffer.ylen; j++) {
         const eightPixels = buffer.get(i, j);
-        const spriteByte = this.mem[this.I + i*buffer.ylen + j];
-        this.mem[this.I + i*buffer.ylen + j] = eightPixels ^ spriteByte;
+        const spriteByte = this.mem[this.I + i * buffer.ylen + j];
+        this.mem[this.I + i * buffer.ylen + j] = eightPixels ^ spriteByte;
 
         collided =
           collided ||
-          (eightPixels & this.mem[this.I + i*buffer.ylen + j]) !== 0;
+          (eightPixels & this.mem[this.I + i * buffer.ylen + j]) !== 0;
       }
     }
     this.registers[0xF] = collided ? 1 : 0;
