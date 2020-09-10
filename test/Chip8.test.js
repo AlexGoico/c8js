@@ -1,4 +1,5 @@
 import Chip8 from '../src/Chip8.js';
+import {sprite} from '../src/constants/Sprites';
 
 const noop = () => {};
 
@@ -54,11 +55,24 @@ describe('Chip8 Suite', function c8Suite() {
       }, 2000));
   });
 
-  describe('memory tests', function memLoadSuite() {
-    test('memory set returns correct value', function setMemoryValue() {
+  describe('loadSprites tests', function loadSpriteSuite() {
+    test('mem addr 0~4 are loaded for sprite 0', function loadSpritesTest() {
       const c8 = new Chip8(new FakeRenderer());
-
-      expect(c8.loadIntoMemory(0, 0, 1)).toEqual(1);
+      c8.loadSprites(sprite);
+      expect(c8.mem[0x000]).toEqual(0xF0);
+      expect(c8.mem[0x000+1]).toEqual(0x90);
+      expect(c8.mem[0x000+2]).toEqual(0x90);
+      expect(c8.mem[0x000+3]).toEqual(0x90);
+      expect(c8.mem[0x000+4]).toEqual(0xF0);
+    });
+    test('mem addr 75~79 are loaded for sprite 0', function loadSpritesTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadSprites(sprite);
+      expect(c8.mem[0x000+75]).toEqual(0xF0);
+      expect(c8.mem[0x000+76]).toEqual(0x80);
+      expect(c8.mem[0x000+77]).toEqual(0xF0);
+      expect(c8.mem[0x000+78]).toEqual(0x80);
+      expect(c8.mem[0x000+79]).toEqual(0x80);
     });
   });
 

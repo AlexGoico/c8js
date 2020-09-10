@@ -6,12 +6,12 @@ describe('Constants - Sprites', function Sprites() {
   });
 
   test('character 0 sprite matches hexademical', function() {
-    const zeroHex = '0xF0, 0x90, 0x90, 0x90, 0xF0';
+    const zeroHex = [0xF0, 0x90, 0x90, 0x90, 0xF0];
     expect(sprite.get(0)).toEqual(zeroHex);
   });
 
   test('character F sprite matches hexademical', function() {
-    const fHex = '0xF0, 0x80, 0xF0, 0x80, 0x80';
+    const fHex = [0xF0, 0x80, 0xF0, 0x80, 0x80];
     expect(sprite.get('F')).toEqual(fHex);
   });
 });
