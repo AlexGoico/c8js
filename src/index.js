@@ -31,8 +31,13 @@ class AppDriver {
               console.assert(memROMData === romData,
                 `ROM not correctly loaded into Chip8 memory`);
 
-              AppDriver.c8.start();
-              setTimeout(() => AppDriver.c8.stop(), 3000);
+              for (let i = 0; i < 20; i++) {
+                AppDriver.c8.step();
+              }
+              console.log(AppDriver.c8.mem.slice(0xF00, 0xF00 + 256));
+              AppDriver.c8.render();
+              // AppDriver.c8.start();
+              // setTimeout(() => AppDriver.c8.stop(), 3000);
             });
           }
         });

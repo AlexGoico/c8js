@@ -1,15 +1,11 @@
 class Sprite {
-  constructor(eightBytes) {
-    this.bytes = eightBytes;
+  constructor(fiveBytes) {
+    this.bytes = fiveBytes;
   }
 
   * [Symbol.iterator]() {
-    for (const twoByte of this.bytes) {
-      const msb = twoByte >> 8;
-      const lsb = twoByte & 0xFF;
-
-      yield msb;
-      yield lsb;
+    for (const byte of this.bytes) {
+      yield byte;
     }
   }
 }

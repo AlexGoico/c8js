@@ -32,23 +32,11 @@ class ArrayView {
 
   get(i) {
     if (this.offset + i >= this.arrRef.length) {
-      throw new Error(`Cannot index (${this.start + i}) past ` +
+      throw new Error(`Cannot index (${this.offset + i}) past ` +
         `end of array length (${this.arrRef.length} referenced.`);
     }
 
     return this.arrRef[this.offset + i];
-  }
-}
-
-class MatrixView2D {
-  constructor(arrView, xlen, ylen) {
-    this.arrView = arrView;
-    this.xlen = xlen;
-    this.ylen = ylen;
-  }
-
-  get(x, y) {
-    return this.arrView.get(x*this.ylen + y);
   }
 }
 
@@ -61,9 +49,9 @@ class Chip8 {
     this.renderLoopHandle = null;
     this.simLogicHandle = null;
     this.renderer = renderer;
-    this.loadSprites();
 
     this.reset();
+    this.loadSprites();
   }
 
   /**
@@ -77,6 +65,7 @@ class Chip8 {
     // 0xEA0-0xEFF - Reserved or stack. Used for return addresses of subroutines
     this.mem = new Array(4096).fill(0);
     this.registers = new Array(16).fill(0);
+    this.I = 0;
     this.PC = 0x200; // Assume no ROMS intended for a ETI 660 computer
     this.SP = 0xEA0;
 
@@ -97,25 +86,24 @@ class Chip8 {
   }
 
   /**
-   * Loads sprites into memory from 0x0000 to 0x0200
+   * Loads sprites into memory from 0x000 to 0x0200
    */
   loadSprites() {
-    let iter = 0x0000;
+    let iter = 0x000;
 
-    for (const sprite of sprites.values()) {
-      for (let i = 0; i < sprite.length; i++) {
-        this.mem[iter++] = sprite[i] >> 8;
-        this.mem[iter++] = sprite[i] & 0xFF;
+    sprites.forEach((sprite) => {
+      for (const byte of sprite) {
+        this.mem[iter++] = byte;
       }
-    }
+    });
   }
 
   /**
    * Renders the Chip8's display buffer.
    */
   render() {
-    const view = new ArrayView(this.mem, 0xF00, 256);
-    this.renderer.draw(new MatrixView2D(view, 8, 32));
+    const view = new ArrayView(this.mem, 0xF00, 255);
+    this.renderer.draw(view);
   }
 
   /**
@@ -124,25 +112,37 @@ class Chip8 {
    * otherwise 0.
    * @param {int} x The x coordinate from the beginning of memory where drawing
    *                will begin
-   * @param {int} y The x coordinate from the beginning of memory where drawing
+   * @param {int} y The y coordinate from the beginning of memory where drawing
    *                will begin
    * @param {int} h How much of the height of the sprite will be utilized for
    *                this drawing
    */
   draw(x, y, h) {
-    const view = new ArrayView(this.mem, 0xF000, 0xF000 + 8*h);
-    const buffer = new MatrixView2D(view, 8, h);
+    const view = new ArrayView(this.mem, 0xF00, 0xF00 + 256);
 
     let collided = false;
-    for (let i = x; i < buffer.xlen; i++) {
-      for (let j = y; j < buffer.ylen; j++) {
-        const eightPixels = buffer.get(i, j);
-        const spriteByte = this.mem[this.I + i*buffer.ylen + j];
-        this.mem[this.I + i*buffer.ylen + j] = eightPixels ^ spriteByte;
 
-        collided =
-          collided ||
-          (eightPixels & this.mem[this.I + i*buffer.ylen + j]) !== 0;
+    for (let i = 0; i < h; i++) {
+      for (let b = 0; b < 8; b++) {
+        const bit = (x+i)*64 + y + b;
+        console.log(x);
+        console.log(y);
+        console.log(h);
+        console.log(bit);
+        const memByteIdx = Math.floor(bit / 8);
+        const offset = bit % 8;
+
+        const memByte = view.get(memByteIdx);
+        const memBit = (memByte >> offset) & 0b1;
+
+        const spriteByte = this.mem[this.I + i];
+        const spriteBit = (spriteByte >> b) & 0b1;
+
+        const result = ((spriteBit ^ memBit) << offset);
+
+        collided = collided || (memBit && !spriteBit);
+        this.mem[0xF00 + memByteIdx] =
+          this.mem[0xF00 + memByteIdx] | result;
       }
     }
     this.registers[0xF] = collided ? 1 : 0;
@@ -238,6 +238,17 @@ class Chip8 {
         const h = fourthNibble;
 
         this.draw(x, y, h);
+      } break;
+      case 0xF: {
+        const lastByte = (thirdNibble << 4) + fourthNibble;
+        switch (lastByte) {
+          case 0x1E: {
+            this.I += secondNibble >> 8;
+          } break;
+          default:
+            const code = opcode.toString(16);
+            throw new InvalidInstruction(`Opcode ${code} not implemented.`);
+        }
       } break;
       default:
         const code = opcode.toString(16);

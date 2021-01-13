@@ -29,7 +29,7 @@ class PixiRenderer {
 
   /**
    * Renders a view of bytes x rows where each byte represents 8 pixels.
-   * @param {MatrixView2D} buffer A 2d array view of bytes x rows.
+   * @param {ArrayBuffer} buffer A 2d array view of bytes x rows.
    */
   draw(buffer) {
     this.pixels.removeChildren();
@@ -38,19 +38,22 @@ class PixiRenderer {
     const whiteRect = new PIXI.Graphics();
 
     // this assumption should be designed better than a magic number
-    const pixWidth = this.app.screen.width / (buffer.xlen * 8);
-    const pixHeight = this.app.screen.height / buffer.ylen;
+    const pixWidth = this.app.screen.width / 64;
+    const pixHeight = this.app.screen.height / 32;
 
     blkRect.beginFill(0x000000);
     whiteRect.beginFill(0xFFFFFF);
-    for (let x = 0; x < buffer.xlen; x++) {
-      for (let y = 0; y < buffer.ylen; y++) {
-        const eightPixels = buffer.get(x, y);
-        for (let i = 0; i < 8; i++) {
-          const leftPixel = (eightPixels << i) & 0b10000000;
-          const rect = leftPixel ? whiteRect : blkRect;
-          rect.drawRect((x*8+i) * pixWidth, y * pixHeight, pixWidth, pixHeight);
-        }
+    for (let r = 0; r < 32; r++) {
+      for (let c = 0; c < 64; c++) {
+        const bit = r * 64 + c;
+        const byteIdx = Math.floor(bit / 8);
+        const offset = bit % 8;
+
+        const byte = buffer.get(byteIdx);
+
+        const leftPixel = (byte >> offset) & 0b1;
+        const rect = leftPixel ? whiteRect : blkRect;
+        rect.drawRect(r * pixWidth, c * pixHeight, pixWidth, pixHeight);
       }
     }
     whiteRect.endFill();

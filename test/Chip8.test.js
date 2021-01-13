@@ -25,6 +25,12 @@ function getFakeROM(codes) {
   return rom;
 }
 
+function expectSprite(mem, bytes) {
+  for (let i = 0; i < bytes.length; i++) {
+    expect(mem[i]).toEqual(bytes[i]);
+  }
+}
+
 describe('Chip8 Suite', function c8Suite() {
   beforeEach(function() {
     FakeRenderer.mockClear();
@@ -56,6 +62,37 @@ describe('Chip8 Suite', function c8Suite() {
         expect(c8.simLogicHandle).toBeNil();
       }, 2000));
   });
+
+  test(`Can load sprites`, function spriteLoadTest() {
+    const c8 = new Chip8(new FakeRenderer());
+    expectSprite(c8.mem.slice(0, 5), [
+      0xF0, 0x90, 0x90, 0x90, 0xF0,
+    ]);
+    expectSprite(c8.mem.slice(30, 35), [
+      0xF0, 0x80, 0xF0, 0x90, 0xF0,
+    ]);
+  });
+
+  test(`Can render sprite`, function spriteRenderTest() {
+    const c8 = new Chip8(new FakeRenderer());
+    c8.draw(0, 0, 5);
+
+    expect(c8.mem[0xF00]).toEqual(0xF0);
+    expect(c8.mem[0xF00 + 8]).toEqual(0x90);
+    expect(c8.mem[0xF00 + 16]).toEqual(0x90);
+    expect(c8.mem[0xF00 + 24]).toEqual(0x90);
+    expect(c8.mem[0xF00 + 32]).toEqual(0xF0);
+  });
+
+  test(`Can render sprite inbetween byte boundaries`,
+    function spriteBoundaryRenderTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.draw(0, 2, 5);
+
+      expect(c8.mem[0xF00]).toEqual(0b11000000);
+      expect(c8.mem[0xF01]).toEqual(0b00000011);
+    },
+  );
 
   describe('opcode tests', function opcodeSuite() {
     test('1NNN - jmpAddr', function jmpAddrTest() {
