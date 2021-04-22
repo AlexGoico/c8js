@@ -33,10 +33,19 @@ class ArrayView {
   get(i) {
     if (this.offset + i >= this.arrRef.length) {
       throw new Error(`Cannot index (${this.start + i}) past ` +
-        `end of array length (${this.arrRef.length} referenced.`);
+        `end of array length (${this.arrRef.length} referenced).`);
     }
 
     return this.arrRef[this.offset + i];
+  }
+
+  set(i, val) {
+    if (this.offset + i >= this.arrRef.length) {
+      throw new Error(`Cannot index (${this.start + i}) past ` +
+          `end of array length (${this.arrRef.length} referenced.`);
+    }
+
+    this.arrRef[this.offset + i] = val;
   }
 }
 
@@ -124,28 +133,31 @@ class Chip8 {
    * otherwise 0.
    * @param {int} x The x coordinate from the beginning of memory where drawing
    *                will begin
-   * @param {int} y The x coordinate from the beginning of memory where drawing
+   * @param {int} y The y coordinate from the beginning of memory where drawing
    *                will begin
    * @param {int} h How much of the height of the sprite will be utilized for
    *                this drawing
    */
   draw(x, y, h) {
-    const view = new ArrayView(this.mem, 0xF000, 0xF000 + 8*h);
-    const buffer = new MatrixView2D(view, 8, h);
+    const view = new ArrayView(this.mem, 0xF00, 0xF00 + 256);
 
-    let collided = false;
-    for (let i = x; i < buffer.xlen; i++) {
-      for (let j = y; j < buffer.ylen; j++) {
-        const eightPixels = buffer.get(i, j);
-        const spriteByte = this.mem[this.I + i*buffer.ylen + j];
-        this.mem[this.I + i*buffer.ylen + j] = eightPixels ^ spriteByte;
+    this.registers[0xF] = 0;
+    for (let i = 0; i < h; i++) { // i is the row (byte)
+      for (let j = 0; j < 8; j++) { // j is the column pos (bit)
+        // const spriteBit = this.I + i * 8 + j;
+        const spriteBitmask = 0x1 << (8-j);
+        const spriteBit = (this.mem[this.I+i] & spriteBitmask) >> (8-j);
 
-        collided =
-          collided ||
-          (eightPixels & this.mem[this.I + i*buffer.ylen + j]) !== 0;
+        let screenBit = x + y*64;
+        const screenByte = Math.floor(screenBit / 8);
+        const screenBitOffset = screenBit % 8;
+        screenBit = ((view.get(screenByte) >> (8-screenBitOffset)) & 0x1);
+        console.log(`${spriteBit} ${screenBit}`);
+        this.registers[0xF] |= (screenBit === 0x1) & (spriteBit === 0x1);
+        view.set(screenByte,
+          view.get(screenByte) ^ (spriteBit << (8-screenBitOffset)));
       }
     }
-    this.registers[0xF] = collided ? 1 : 0;
   }
 
   /**
