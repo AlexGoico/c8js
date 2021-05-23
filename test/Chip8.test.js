@@ -1,11 +1,13 @@
 import Chip8 from '../src/Chip8.js';
 
 const noop = () => {};
+console.log = noop;
 
 const FakeRenderer = jest.fn().mockImplementation(function() {
   return {
     'init': noop,
     'draw': noop,
+    'render': noop,
   };
 });
 
@@ -42,6 +44,7 @@ describe('Chip8 Suite', function c8Suite() {
 
   test(`can stop sim loop`, function stop() {
     const c8 = new Chip8(new FakeRenderer());
+    c8.step = noop;
     return c8.start()
       .then(function() {
         expect(c8.renderLoopHandle).not.toBeNil();
@@ -55,6 +58,14 @@ describe('Chip8 Suite', function c8Suite() {
   });
 
   describe('opcode tests', function opcodeSuite() {
+    test('1NNN - jmpAddr', function jmpAddrTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadROM(getFakeROM([0x12, 0x08]));
+      c8.step();
+
+      expect(c8.PC).toEqual(0x208);
+    });
+
     test('2NNN - callAddr', function callAddrTest() {
       const c8 = new Chip8(new FakeRenderer());
       c8.loadROM(getFakeROM([0x20, 0x08]));
@@ -77,7 +88,7 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.PC).toEqual(0x206);
     });
 
-    test('6XKNN - setRegToNum', function setRegToNumTest() {
+    test('6XNN - setRegToNum', function setRegToNumTest() {
       const c8 = new Chip8(new FakeRenderer());
       c8.loadROM(getFakeROM([0x62, 0x0A]));
       c8.step();
@@ -104,6 +115,28 @@ describe('Chip8 Suite', function c8Suite() {
       c8.step();
 
       expect(c8.I).toEqual(0x256);
+    });
+
+    test('DXYN - disp', function dispDrawTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadROM([
+        0x6a, 0x00,
+        0x6B, 0x00,
+        0xA0, 0x00,
+        0xDA, 0xB5,
+      ]);
+
+      for (let i = 0; i < 4; i++) {
+        c8.step();
+      }
+
+      expect(c8.registers[0xA]).toEqual(0x0);
+      expect(c8.registers[0xB]).toEqual(0x0);
+      expect(c8.I).toEqual(0x0);
+      expect(c8.mem[0]).toEqual(0xF0);
+      expect(c8.mem[0xF00]).toEqual(0xF0);
+      expect(c8.mem[0xF08]).toEqual(0x90);
+      expect(c8.mem[0xF00+32]).toEqual(0xF0);
     });
 
     test('Throws InvalidException on invalid opcodes',

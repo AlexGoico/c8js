@@ -1,3 +1,5 @@
+import sprites from './Sprites';
+
 const FPS = 30;
 const MS_PER_FRAME = 1000 / FPS;
 
@@ -31,22 +33,19 @@ class ArrayView {
   get(i) {
     if (this.offset + i >= this.arrRef.length) {
       throw new Error(`Cannot index (${this.start + i}) past ` +
-        `end of array length (${this.arrRef.length} referenced.`);
+        `end of array length (${this.arrRef.length} referenced).`);
     }
 
     return this.arrRef[this.offset + i];
   }
-}
 
-class MatrixView2D {
-  constructor(arrView, xlen, ylen) {
-    this.arrView = arrView;
-    this.xlen = xlen;
-    this.ylen = ylen;
-  }
+  set(i, val) {
+    if (this.offset + i >= this.arrRef.length) {
+      throw new Error(`Cannot index (${this.start + i}) past ` +
+          `end of array length (${this.arrRef.length} referenced.`);
+    }
 
-  get(x, y) {
-    return this.arrView.get(x*this.ylen + y);
+    this.arrRef[this.offset + i] = val;
   }
 }
 
@@ -77,6 +76,8 @@ class Chip8 {
     this.PC = 0x200; // Assume no ROMS intended for a ETI 660 computer
     this.SP = 0xEA0;
 
+    this.loadSprites();
+
     this.renderer.init();
   }
 
@@ -94,11 +95,24 @@ class Chip8 {
   }
 
   /**
+   * Loads sprites into memory from 0x0000 to 0x0200
+   */
+  loadSprites() {
+    let iter = 0x0000;
+
+    for (const sprite of sprites) {
+      for (const byte of sprite) {
+        this.mem[iter++] = byte;
+      }
+    }
+  }
+
+  /**
    * Renders the Chip8's display buffer.
    */
   render() {
     const view = new ArrayView(this.mem, 0xF00, 256);
-    this.renderer.draw(new MatrixView2D(view, 8, 32));
+    this.renderer.draw(view);
   }
 
   /**
@@ -107,28 +121,29 @@ class Chip8 {
    * otherwise 0.
    * @param {int} x The x coordinate from the beginning of memory where drawing
    *                will begin
-   * @param {int} y The x coordinate from the beginning of memory where drawing
+   * @param {int} y The y coordinate from the beginning of memory where drawing
    *                will begin
    * @param {int} h How much of the height of the sprite will be utilized for
    *                this drawing
    */
   draw(x, y, h) {
-    const view = new ArrayView(this.mem, 0xF00, 0xF00 + 8*h);
-    const buffer = new MatrixView2D(view, 8, h);
+    const view = new ArrayView(this.mem, 0xF00, 0xF00 + 256);
 
-    let collided = false;
-    for (let i = x; i < buffer.xlen; i++) {
-      for (let j = y; j < buffer.ylen; j++) {
-        const eightPixels = buffer.get(i, j);
-        const spriteByte = this.mem[this.I + i*buffer.ylen + j];
-        this.mem[this.I + i*buffer.ylen + j] = eightPixels ^ spriteByte;
+    this.registers[0xF] = 0;
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < 8; j++) {
+        const spriteBitmask = 0x1 << (7-j);
+        const spriteBit = (this.mem[this.I+i] & spriteBitmask) >> (7-j);
 
-        collided =
-          collided ||
-          (eightPixels & this.mem[this.I + i*buffer.ylen + j]) !== 0;
+        let screenBit = x + (y+i)*64 + j;
+        const screenByte = Math.floor(screenBit / 8);
+        const screenBitOffset = screenBit % 8;
+        screenBit = (view.get(screenByte) >> (7-screenBitOffset)) & 0x1;
+        this.registers[0xF] |= (screenBit === 0x1) & (spriteBit === 0x1);
+        view.set(screenByte,
+          view.get(screenByte) ^ (spriteBit << (7-screenBitOffset)));
       }
     }
-    this.registers[0xF] = collided ? 1 : 0;
   }
 
   /**
@@ -141,6 +156,7 @@ class Chip8 {
     catch (err) {
       this.stop();
       console.error(err.message);
+      console.trace();
     }
   }
 
@@ -183,6 +199,11 @@ class Chip8 {
     const fourthNibble = opcode & 0xF;
 
     switch (firstNibble) {
+      case 1: {
+        const addr = (secondNibble << 8) + (thirdNibble << 4) + fourthNibble;
+        this.PC = addr;
+        return;
+      }
       case 2: {
         // Set stack frame to
         this.mem[this.SP] = this.PC & 0xF00;
