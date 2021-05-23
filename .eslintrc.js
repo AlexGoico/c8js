@@ -26,7 +26,7 @@ module.exports = {
     'valid-jsdoc': 0,
     'linebreak-style': [
       'error',
-      process.env.NODE_ENV === 'prod' ? 'unix' : 'windows',
+      process.platform === 'win32' ? 'windows' : 'unix',
     ],
     'newline-per-chained-call': [
       'error',
