@@ -24,10 +24,6 @@ module.exports = {
     ],
     'require-jsdoc': 0,
     'valid-jsdoc': 0,
-    'linebreak-style': [
-      'error',
-      'windows',
-    ],
     'newline-per-chained-call': [
       'error',
       {
