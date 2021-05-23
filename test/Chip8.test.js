@@ -139,11 +139,24 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.mem[0xF00+32]).toEqual(0xF0);
     });
 
+    test('FX33 - setIToVxBCD', function setIToVxBCDTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.registers[0x0] = 256;
+      c8.I = 0x500;
+
+      c8.loadROM(getFakeROM([0xF0, 0x33]));
+      c8.step();
+
+      expect(c8.mem[c8.I]).toEqual(2);
+      expect(c8.mem[c8.I+1]).toEqual(5);
+      expect(c8.mem[c8.I+2]).toEqual(6);
+    });
+
     test('Throws InvalidException on invalid opcodes',
       function invalidOpcodeTest() {
         let c8 = new Chip8(new FakeRenderer());
-        c8.loadROM(getFakeROM([0xFFF, 0x0A]));
-        expect(c8.step.bind(c8)).toThrow('Opcode fff0a not implemented');
+        c8.loadROM(getFakeROM([0xFF, 0x0A]));
+        expect(c8.step.bind(c8)).toThrow('Opcode ff0a not implemented');
 
         c8 = new Chip8(new FakeRenderer());
         c8.loadROM(getFakeROM([-1, 0x00]));

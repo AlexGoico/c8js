@@ -9,6 +9,13 @@ class InvalidInstruction extends Error {
     this.name = `InvalidInstruction`;
   }
 }
+/*
+ * Filler method for quickly stubbing unimplemented opcodes
+ */
+function throwNotImplemented(opcode) {
+  const code = opcode.toString(16);
+  throw new InvalidInstruction(`Opcode ${code} not implemented.`);
+}
 
 function checkOffsetRange_(arr, start, len) {
   if (start > arr.length) {
@@ -75,6 +82,7 @@ class Chip8 {
     this.registers = new Array(16).fill(0);
     this.PC = 0x200; // Assume no ROMS intended for a ETI 660 computer
     this.SP = 0xEA0;
+    this.I = undefined;
 
     this.loadSprites();
 
@@ -184,6 +192,7 @@ class Chip8 {
     this.simLogicHandle = null;
   }
 
+
   /**
    * Move one step into running the Chip8, that is, execute a single opcode.
    * @throws InvalidInstruction Throw when an unimplemented opcode is
@@ -237,9 +246,23 @@ class Chip8 {
 
         this.draw(x, y, h);
       } break;
-      default:
-        const code = opcode.toString(16);
-        throw new InvalidInstruction(`Opcode ${code} not implemented.`);
+      case 0xF: {
+        switch (thirdNibble) {
+          case 1: throwNotImplemented(opcode); break;
+          case 2: throwNotImplemented(opcode); break;
+          case 3: {
+            let vx = this.registers[secondNibble];
+
+            for (let i = 2; i >= 0; i--, vx /= 10) {
+              this.mem[this.I+i] = Math.floor(vx % 10);
+            }
+          } break;
+          case 5: throwNotImplemented(opcode); break;
+          case 6: throwNotImplemented(opcode); break;
+          default: throwNotImplemented(opcode);
+        }
+      } break;
+      default: throwNotImplemented(opcode);
     }
 
     this.PC += 2;
