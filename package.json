@@ -7,24 +7,24 @@
     "test": "test"
   },
   "dependencies": {
-    "pixi.js": "^5.3.0"
+    "pixi.js": "^5.3.9"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.5",
-    "@babel/preset-env": "^7.10.4",
-    "babel-jest": "^26.1.0",
-    "babel-loader": "^8.1.0",
-    "eslint": "^7.5.0",
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.2",
+    "babel-jest": "^26.6.3",
+    "babel-loader": "^8.2.2",
+    "eslint": "^7.27.0",
     "eslint-config-google": "^0.14.0",
-    "eslint-plugin-jsdoc": "^30.0.3",
-    "html-webpack-plugin": "^4.3.0",
-    "husky": "^4.2.5",
-    "jest": "^26.1.0",
+    "eslint-plugin-jsdoc": "^30.7.13",
+    "html-webpack-plugin": "^4.5.2",
+    "husky": "^4.3.8",
+    "jest": "^26.6.3",
     "jest-extended": "^0.11.5",
-    "jsdoc": "^3.6.5",
-    "webpack": "^4.44.0",
+    "jsdoc": "^3.6.7",
+    "webpack": "^4.46.0",
     "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "webpack-dev-server": "^3.11.2"
   },
   "scripts": {
     "build": "webpack --mode prod",
