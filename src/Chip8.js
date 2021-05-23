@@ -258,7 +258,11 @@ class Chip8 {
             }
           } break;
           case 5: throwNotImplemented(opcode); break;
-          case 6: throwNotImplemented(opcode); break;
+          case 6: {
+            for (let i = 0; i < secondNibble; i++) {
+              this.registers[i] = this.mem[this.I+i];
+            }
+          } break;
           default: throwNotImplemented(opcode);
         }
       } break;

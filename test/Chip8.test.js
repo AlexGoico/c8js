@@ -152,6 +152,20 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.mem[c8.I+2]).toEqual(6);
     });
 
+    test('FX65', function regLoadVxI() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.I = 0x500;
+      c8.loadROM(getFakeROM([0xF5, 0x65]));
+
+      for (let i = 0; i < 5; i++) {
+        c8.mem[c8.I+i] = i * 10;
+      }
+      c8.step();
+
+      expect(c8.registers[1]).toEqual(10);
+      expect(c8.registers[4]).toEqual(40);
+    });
+
     test('Throws InvalidException on invalid opcodes',
       function invalidOpcodeTest() {
         let c8 = new Chip8(new FakeRenderer());
