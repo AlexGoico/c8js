@@ -49,18 +49,6 @@ class ArrayView {
   }
 }
 
-class MatrixView2D {
-  constructor(arrView, xlen, ylen) {
-    this.arrView = arrView;
-    this.xlen = xlen;
-    this.ylen = ylen;
-  }
-
-  get(x, y) {
-    return this.arrView.get(x*this.ylen + y);
-  }
-}
-
 class Chip8 {
   /**
    * @param {Renderer} renderer Renderer used while running.
@@ -70,7 +58,6 @@ class Chip8 {
     this.renderLoopHandle = null;
     this.simLogicHandle = null;
     this.renderer = renderer;
-    this.loadSprites();
 
     this.reset();
   }
@@ -88,6 +75,8 @@ class Chip8 {
     this.registers = new Array(16).fill(0);
     this.PC = 0x200; // Assume no ROMS intended for a ETI 660 computer
     this.SP = 0xEA0;
+
+    this.loadSprites();
 
     this.renderer.init();
   }
@@ -111,10 +100,9 @@ class Chip8 {
   loadSprites() {
     let iter = 0x0000;
 
-    for (const sprite of sprites.values()) {
-      for (let i = 0; i < sprite.length; i++) {
-        this.mem[iter++] = sprite[i] >> 8;
-        this.mem[iter++] = sprite[i] & 0xFF;
+    for (const sprite of sprites) {
+      for (const byte of sprite) {
+        this.mem[iter++] = byte;
       }
     }
   }
@@ -124,7 +112,7 @@ class Chip8 {
    */
   render() {
     const view = new ArrayView(this.mem, 0xF00, 256);
-    this.renderer.draw(new MatrixView2D(view, 8, 32));
+    this.renderer.draw(view);
   }
 
   /**
@@ -142,20 +130,18 @@ class Chip8 {
     const view = new ArrayView(this.mem, 0xF00, 0xF00 + 256);
 
     this.registers[0xF] = 0;
-    for (let i = 0; i < h; i++) { // i is the row (byte)
-      for (let j = 0; j < 8; j++) { // j is the column pos (bit)
-        // const spriteBit = this.I + i * 8 + j;
-        const spriteBitmask = 0x1 << (8-j);
-        const spriteBit = (this.mem[this.I+i] & spriteBitmask) >> (8-j);
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < 8; j++) {
+        const spriteBitmask = 0x1 << (7-j);
+        const spriteBit = (this.mem[this.I+i] & spriteBitmask) >> (7-j);
 
-        let screenBit = x + y*64;
+        let screenBit = x + (y+i)*64 + j;
         const screenByte = Math.floor(screenBit / 8);
         const screenBitOffset = screenBit % 8;
-        screenBit = ((view.get(screenByte) >> (8-screenBitOffset)) & 0x1);
-        console.log(`${spriteBit} ${screenBit}`);
+        screenBit = (view.get(screenByte) >> (7-screenBitOffset)) & 0x1;
         this.registers[0xF] |= (screenBit === 0x1) & (spriteBit === 0x1);
         view.set(screenByte,
-          view.get(screenByte) ^ (spriteBit << (8-screenBitOffset)));
+          view.get(screenByte) ^ (spriteBit << (7-screenBitOffset)));
       }
     }
   }
