@@ -249,7 +249,9 @@ class Chip8 {
       case 0xF: {
         switch (thirdNibble) {
           case 1: throwNotImplemented(opcode); break;
-          case 2: throwNotImplemented(opcode); break;
+          case 2: {
+            this.I = this.registers[secondNibble]*5;
+          } break;
           case 3: {
             let vx = this.registers[secondNibble];
 

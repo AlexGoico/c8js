@@ -139,6 +139,18 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.mem[0xF00+32]).toEqual(0xF0);
     });
 
+    test('FX29 - setIToSpriteAddr', function setIToSpriteAddrTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      const num = 5;
+      c8.registers[0x0] = num;
+      c8.I = 0x500;
+
+      c8.loadROM(getFakeROM([0xF0, 0x29]));
+      c8.step();
+
+      expect(c8.I).toEqual(num*5);
+    });
+
     test('FX33 - setIToVxBCD', function setIToVxBCDTest() {
       const c8 = new Chip8(new FakeRenderer());
       c8.registers[0x0] = 256;
