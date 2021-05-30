@@ -152,6 +152,17 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.mem[0xF00+32]).toEqual(0xF0);
     });
 
+    test('FX15 - setDelayTimerToVx', function setDelayTimerToVxTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadROM([0xF2, 0x15]);
+
+      c8.registers[2] = 0xFF;
+      expect(c8.dTimer).toEqual(0);
+
+      c8.step();
+      expect(c8.dTimer).toEqual(0xFF);
+    });
+
     test('FX29 - setIToSpriteAddr', function setIToSpriteAddrTest() {
       const c8 = new Chip8(new FakeRenderer());
       const num = 5;

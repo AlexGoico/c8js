@@ -83,6 +83,8 @@ class Chip8 {
     this.PC = 0x200; // Assume no ROMS intended for a ETI 660 computer
     this.SP = 0xEA0;
     this.I = undefined;
+    this.dTimer = 0;
+    this.sTimer = 0;
 
     this.loadSprites();
 
@@ -263,7 +265,14 @@ class Chip8 {
       } break;
       case 0xF: {
         switch (thirdNibble) {
-          case 1: throwNotImplemented(opcode); break;
+          case 1: {
+            switch (fourthNibble) {
+              case 5: this.dTimer = this.registers[secondNibble]; break;
+              case 8: throwNotImplemented(opcode); break;
+              case 0xE: throwNotImplemented(opcode); break;
+              default: throwNotImplemented(opcode);
+            }
+          } break;
           case 2: {
             this.I = this.registers[secondNibble]*5;
           } break;
