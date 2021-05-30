@@ -58,6 +58,19 @@ describe('Chip8 Suite', function c8Suite() {
   });
 
   describe('opcode tests', function opcodeSuite() {
+    test('00EE - ret', function retTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.loadROM(getFakeROM([0x22, 0x04, 0xFF, 0xFF, 0x00, 0xEE]));
+
+      c8.step();
+      expect(c8.PC).toEqual(0x204);
+      expect(c8.SP).toEqual(0xEA2);
+
+      c8.step();
+      expect(c8.PC).toEqual(0x0202);
+      expect(c8.SP).toEqual(0xEA0);
+    });
+
     test('1NNN - jmpAddr', function jmpAddrTest() {
       const c8 = new Chip8(new FakeRenderer());
       c8.loadROM(getFakeROM([0x12, 0x08]));
@@ -68,13 +81,13 @@ describe('Chip8 Suite', function c8Suite() {
 
     test('2NNN - callAddr', function callAddrTest() {
       const c8 = new Chip8(new FakeRenderer());
-      c8.loadROM(getFakeROM([0x20, 0x08]));
+      c8.loadROM(getFakeROM([0x28, 0x08]));
       c8.step();
 
-      expect(c8.PC).toEqual(0x008);
-      expect(c8.mem[c8.SP]).toEqual(0x200);
-      expect(c8.mem[c8.SP+1]).toEqual(0);
-      expect(c8.mem[c8.SP+2]).toEqual(0);
+      expect(c8.PC).toEqual(0x808);
+      expect(c8.SP).toEqual(0xEA2);
+      expect(c8.mem[c8.SP-2]).toEqual(0x200);
+      expect(c8.mem[c8.SP-1]).toEqual(0x0);
     });
 
     test('3XNN - ifRegXEqNum', function ifRegXEqNum() {

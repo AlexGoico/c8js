@@ -208,6 +208,21 @@ class Chip8 {
     const fourthNibble = opcode & 0xF;
 
     switch (firstNibble) {
+      case 0: {
+        if (thirdNibble === 0xE) {
+          switch (fourthNibble) {
+            case 0: throwNotImplemented(opcode); break;
+            case 0xE: {
+              this.PC = this.mem[--this.SP] & 0xFF;
+              this.PC = this.PC | (this.mem[--this.SP] & 0xF00);
+            } break;
+            default: throwNotImplemented(opcode);
+          }
+        }
+        else {
+
+        }
+      } break;
       case 1: {
         const addr = (secondNibble << 8) + (thirdNibble << 4) + fourthNibble;
         this.PC = addr;
@@ -215,8 +230,8 @@ class Chip8 {
       }
       case 2: {
         // Set stack frame to
-        this.mem[this.SP] = this.PC & 0xF00;
-        this.mem[this.SP + 1] = this.PC & 0xFF;
+        this.mem[this.SP++] = this.PC & 0xF00;
+        this.mem[this.SP++] = this.PC & 0xFF;
         this.PC = opcode & 0xFFF;
         return;
       }
