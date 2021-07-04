@@ -265,6 +265,13 @@ class Chip8 {
       } break;
       case 0xF: {
         switch (thirdNibble) {
+          case 0: {
+            switch (fourthNibble) {
+              case 7: this.registers[secondNibble] = this.dTimer; break;
+              case 0xA: throwNotImplemented(opcode); break;
+              default: throwNotImplemented(opcode); break;
+            }
+          } break;
           case 1: {
             switch (fourthNibble) {
               case 5: this.dTimer = this.registers[secondNibble]; break;

@@ -152,6 +152,15 @@ describe('Chip8 Suite', function c8Suite() {
       expect(c8.mem[0xF00+32]).toEqual(0xF0);
     });
 
+    test('FX07 - getDelay', function getDelayTimerTest() {
+      const c8 = new Chip8(new FakeRenderer());
+      c8.dTimer = 10;
+      c8.loadROM([0xF0, 0x07]);
+
+      c8.step();
+      expect(c8.registers[0]).toEqual(10);
+    });
+
     test('FX15 - setDelayTimerToVx', function setDelayTimerToVxTest() {
       const c8 = new Chip8(new FakeRenderer());
       c8.loadROM([0xF2, 0x15]);
